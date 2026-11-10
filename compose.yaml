@@ -22,6 +22,7 @@ services:
         CLAUDE_CODE_VERSION: ${CLAUDE_CODE_VERSION:-}
         GITHUB_MCP_VERSION: ${GITHUB_MCP_VERSION:-latest}
         GLAB_VERSION: ${GLAB_VERSION:-}
+        INSTALL_ZSH: ${INSTALL_ZSH:-true}
         EXTRA_APT_PACKAGES: ${EXTRA_APT_PACKAGES:-}
     image: ${SANDBOX_IMAGE:-sandbox-opencode:local}
     container_name: ${SANDBOX_NAME:-sandbox}

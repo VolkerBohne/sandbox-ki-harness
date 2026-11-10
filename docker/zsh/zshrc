@@ -1,0 +1,30 @@
+# zsh-Konfiguration der Sandbox (oh-my-zsh + Spaceship)
+# Wird beim Image-Build nach ~/.zshrc kopiert; Aenderungen hier wirken
+# nach ./sandbox.sh rebuild.
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="spaceship"
+
+# Kein Selbst-Update im Container - neue Versionen kommen per Rebuild
+zstyle ':omz:update' mode disabled
+
+# Completion-Cache und History im Volume sandbox-cache: ueberleben Rebuilds
+mkdir -p "$HOME/.cache/zsh"
+ZSH_COMPDUMP="$HOME/.cache/zsh/zcompdump-${ZSH_VERSION}"
+HISTFILE="$HOME/.cache/zsh/history"
+HISTSIZE=50000
+SAVEHIST=50000
+
+# zsh-completions muss vor compinit (in oh-my-zsh.sh) im fpath stehen
+fpath+=("$ZSH/custom/plugins/zsh-completions/src")
+
+plugins=(git gh glab zsh-completions)
+
+SPACESHIP_PROMPT_ADD_NEWLINE=false
+
+source "$ZSH/oh-my-zsh.sh"
+
+# Begruessung, Aliase und GH_TOKEN-Ableitung - dieselbe Datei wie fuer bash
+if [ -r /etc/profile.d/zz-sandbox.sh ]; then
+  emulate sh -c 'source /etc/profile.d/zz-sandbox.sh'
+fi

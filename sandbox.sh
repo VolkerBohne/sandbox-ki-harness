@@ -61,7 +61,8 @@ ensure_up() {
 
 enter_shell() {
   ensure_up
-  exec docker compose exec "$SERVICE" bash -l
+  # zsh, falls im Image vorhanden (INSTALL_ZSH), sonst bash
+  exec docker compose exec "$SERVICE" sh -c 'command -v zsh >/dev/null 2>&1 && exec zsh -l || exec bash -l'
 }
 
 enter_opencode() {
@@ -117,7 +118,7 @@ case "$cmd" in
       *)        enter_shell ;;
     esac
     ;;
-  shell|sh|bash)    enter_shell ;;
+  shell|sh|bash|zsh) enter_shell ;;
   opencode|oc)      enter_opencode ;;
   claude|cc)        enter_claude "$@" ;;
   auth|login)

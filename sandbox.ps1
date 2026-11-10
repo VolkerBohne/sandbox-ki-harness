@@ -112,7 +112,8 @@ function Confirm-Up {
 
 function Enter-Shell {
     Confirm-Up
-    & docker compose exec $Service bash -l
+    # zsh, falls im Image vorhanden (INSTALL_ZSH), sonst bash
+    & docker compose exec $Service sh -c 'command -v zsh >/dev/null 2>&1 && exec zsh -l || exec bash -l'
     exit $LASTEXITCODE
 }
 
@@ -177,7 +178,7 @@ switch ($Command.ToLowerInvariant()) {
         break
     }
 
-    { $_ -in @('shell', 'sh', 'bash') } { Enter-Shell; break }
+    { $_ -in @('shell', 'sh', 'bash', 'zsh') } { Enter-Shell; break }
 
     { $_ -in @('opencode', 'oc') } { Enter-Opencode; break }
 

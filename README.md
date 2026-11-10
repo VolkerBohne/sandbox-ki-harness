@@ -18,7 +18,8 @@ sandbox/
 ├── docker/
 │   ├── Dockerfile          Image: Debian + Go/Node/Python + opencode + gh/glab
 │   ├── entrypoint.sh       Startlogik (Git-Identitaet, Verzeichnisse)
-│   └── bashrc.d/sandbox.sh Begruessung und Prompt im Container
+│   ├── bashrc.d/sandbox.sh Begruessung und Prompt im Container
+│   └── zsh/                .zshrc und glab-Plugin fuer oh-my-zsh
 ├── .gitattributes          haelt LF-Zeilenenden fuer den Container
 ├── config/
 │   ├── commands/           die geteilten Befehle - eine Quelle fuer beide
@@ -59,6 +60,27 @@ einer Shell im Container, im Verzeichnis `/work`. Dort:
 ```bash
 opencode
 ```
+
+## Shell
+
+Standard-Shell im Container ist **zsh** mit [oh-my-zsh](https://ohmyz.sh) und
+dem [Spaceship](https://spaceship-prompt.sh)-Prompt. Aktive Plugins:
+
+* `git` - Aliase wie `gst`, `gco`, `gl`, `gp` und Completion
+* `gh` - Completion fuer die GitHub CLI
+* `glab` - Completion fuer die GitLab CLI (eigenes Plugin, `docker/zsh/glab.plugin.zsh`)
+* `zsh-completions` - zusaetzliche Completions fuer viele Werkzeuge
+
+Die Konfiguration steht in `docker/zsh/zshrc` und landet beim Build als
+`~/.zshrc` im Image; Aenderungen wirken nach `./sandbox.sh rebuild`. History
+und Completion-Cache liegen unter `~/.cache/zsh` im Volume `sandbox-cache` und
+ueberleben Rebuilds. oh-my-zsh aktualisiert sich nicht selbst.
+
+Spaceship zeigt Symbole, die eine [Nerd Font](https://www.nerdfonts.com) im
+Terminal des Hosts brauchen - sonst erscheinen Kaestchen.
+
+Wer bash bevorzugt, setzt `INSTALL_ZSH=false` in der `.env` und baut neu.
+`./sandbox.sh shell` faellt dann automatisch auf `bash -l` zurueck.
 
 ## Anmeldung bei Claude
 
