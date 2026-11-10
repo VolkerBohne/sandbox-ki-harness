@@ -15,9 +15,10 @@ if [ -z "${SANDBOX_MOTD_SHOWN:-}" ] && [ -t 1 ]; then
   echo
   _have opencode && echo "  opencode             opencode-TUI"
   _have claude   && echo "  claude               Claude Code"
-  echo "  gh repo clone O/R    Repository nach /work holen"
+  echo "  gh repo clone O/R    GitHub-Repository nach /work holen"
+  _have glab     && echo "  glab repo clone G/P  GitLab-Projekt nach /work holen"
   echo
-  echo "  Gemeinsame Befehle in allen dreien:"
+  echo "  Gemeinsame Befehle in beiden:"
   echo "    /plan-item <Nr>      Item vom Board planen"
   echo "    /implement-item <Nr> Item umsetzen und PR anlegen"
   echo
@@ -30,6 +31,11 @@ if [ -z "${SANDBOX_MOTD_SHOWN:-}" ] && [ -t 1 ]; then
     echo "  GitHub:     Token gesetzt (gh + MCP-Server einsatzbereit)"
   else
     echo "  GitHub:     kein Token -> GITHUB_PERSONAL_ACCESS_TOKEN in .env"
+  fi
+  if [ -n "${GITLAB_TOKEN:-}" ]; then
+    echo "  GitLab:     Token gesetzt fuer ${GITLAB_HOST:-gitlab.com} (glab + MCP-Server)"
+  else
+    echo "  GitLab:     kein Token -> GITLAB_TOKEN in .env"
   fi
   echo
   unset -f _have

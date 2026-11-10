@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Entwicklungs-Sandbox mit opencode und GitHub-Anbindung
+# Entwicklungs-Sandbox mit opencode, GitHub- und GitLab-Anbindung
 
 # ---------------------------------------------------------------- MCP-Builder
 # Der GitHub-MCP-Server wird aus dem Quelltext uebersetzt und als einzelnes
@@ -28,6 +28,7 @@ ARG INSTALL_OPENCODE=true
 ARG OPENCODE_VERSION=
 ARG INSTALL_CLAUDE=true
 ARG CLAUDE_CODE_VERSION=
+ARG GLAB_VERSION=
 ARG EXTRA_APT_PACKAGES=
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -63,6 +64,21 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends gh; \
     rm -rf /var/lib/apt/lists/*; \
     gh --version
+
+# ---------------------------------------------------------------- GitLab CLI
+# glab bringt mit "glab mcp serve" zugleich den GitLab-MCP-Server mit.
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    ver="${GLAB_VERSION}"; \
+    if [ -z "${ver}" ]; then \
+      ver="$(curl -fsSL 'https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases/permalink/latest' | jq -r .tag_name)"; \
+    fi; \
+    ver="${ver#v}"; \
+    curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v${ver}/downloads/glab_${ver}_linux_${arch}.deb" -o /tmp/glab.deb; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends /tmp/glab.deb; \
+    rm -rf /var/lib/apt/lists/* /tmp/glab.deb; \
+    glab --version
 
 # ---------------------------------------------------------------- Node.js
 RUN set -eux; \
@@ -160,6 +176,7 @@ RUN set -eux; \
     mkdir -p /work \
              /home/dev/.config/opencode \
              /home/dev/.config/gh \
+             /home/dev/.config/glab-cli \
              /home/dev/.local/share/opencode \
              /home/dev/.claude/commands \
              /home/dev/.claude/skills \

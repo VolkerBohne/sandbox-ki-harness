@@ -21,6 +21,7 @@ services:
         INSTALL_CLAUDE: ${INSTALL_CLAUDE:-true}
         CLAUDE_CODE_VERSION: ${CLAUDE_CODE_VERSION:-}
         GITHUB_MCP_VERSION: ${GITHUB_MCP_VERSION:-latest}
+        GLAB_VERSION: ${GLAB_VERSION:-}
         EXTRA_APT_PACKAGES: ${EXTRA_APT_PACKAGES:-}
     image: ${SANDBOX_IMAGE:-sandbox-opencode:local}
     container_name: ${SANDBOX_NAME:-sandbox}
@@ -56,6 +57,9 @@ services:
       GH_HOST: ${GH_HOST:-github.com}
       GITHUB_TOOLSETS: ${GITHUB_TOOLSETS:-context,repos,issues,pull_requests,labels,users,projects}
       GITHUB_READ_ONLY: ${GITHUB_READ_ONLY:-}
+      # GitLab: ein Token fuer glab, git und den MCP-Server (glab mcp serve)
+      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      GITLAB_HOST: ${GITLAB_HOST:-gitlab.com}
       # Vorgaben fuer /plan-item und /implement-item
       GITHUB_PROJECT_OWNER: ${GITHUB_PROJECT_OWNER:-}
       GITHUB_PROJECT_NUMBER: ${GITHUB_PROJECT_NUMBER:-}
@@ -94,6 +98,8 @@ services:
       - sandbox-npm:/home/dev/.npm-global
       # gh-CLI-Zustand (eigene Anmeldung per 'gh auth login') bleibt erhalten
       - gh-config:/home/dev/.config/gh
+      # glab-CLI-Zustand (eigene Anmeldung per 'glab auth login') bleibt erhalten
+      - glab-config:/home/dev/.config/glab-cli
       # Optional: SSH-Keys des Macs nur lesend einhaengen (bei Bedarf einkommentieren)
       # - ${HOME}/.ssh:/home/dev/.ssh:ro
 
@@ -114,3 +120,4 @@ volumes:
   sandbox-go:
   sandbox-npm:
   gh-config:
+  glab-config:

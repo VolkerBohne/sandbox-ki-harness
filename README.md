@@ -16,7 +16,7 @@ sandbox/
 ├── .env                    persoenliche Einstellungen (nicht ins Git)
 ├── .env.example            Vorlage mit allen Schaltern
 ├── docker/
-│   ├── Dockerfile          Image: Debian + Go/Node/Python + opencode
+│   ├── Dockerfile          Image: Debian + Go/Node/Python + opencode + gh/glab
 │   ├── entrypoint.sh       Startlogik (Git-Identitaet, Verzeichnisse)
 │   └── bashrc.d/sandbox.sh Begruessung und Prompt im Container
 ├── .gitattributes          haelt LF-Zeilenenden fuer den Container
@@ -25,7 +25,7 @@ sandbox/
 │   │   ├── plan-item.md
 │   │   └── implement-item.md
 │   ├── skills/             duenne SKILL.md-Huellen auf dieselben Texte
-│   ├── opencode/opencode.json   Konfiguration inkl. GitHub-MCP-Server
+│   ├── opencode/opencode.json   Konfiguration inkl. GitHub- und GitLab-MCP-Server
 │   └── claude/settings.json Vorlage fuer Claude Code
 └── workspace/              Projekte -> im Container unter /work
 ```
@@ -137,6 +137,53 @@ heißen wie die Spalten auf dem Board.
 Die mitgelieferten Befehle arbeiten derzeit nur mit Issues und werten diese
 Variablen nicht aus - sie stehen bereit, falls spaeter ein Board dazukommt.
 
+## GitLab anbinden
+
+Parallel zu GitHub stecken im Image zwei Wege zu GitLab, beide nutzen dasselbe
+Token aus der `.env`:
+
+* **GitLab CLI (`glab`)** für Klonen, Branches, Push, Issues und Merge Requests.
+  Der Git-Credential-Helper für `GITLAB_HOST` wird beim Start gesetzt,
+  `git clone`/`git push` über HTTPS funktionieren damit ohne weiteres Zutun.
+* **GitLab-MCP-Server** über `glab mcp serve` - in glab eingebaut, läuft lokal im
+  Container per stdio. Die Agenten bekommen damit Werkzeuge für Issues, Merge
+  Requests, Projekte und CI/CD-Pipelines.
+
+### Token anlegen
+
+In GitLab unter *Preferences → Access tokens* ein Personal Access Token anlegen
+und in der `.env` eintragen:
+
+```
+GITLAB_TOKEN=glpat-...
+GITLAB_HOST=gitlab.com
+```
+
+| Scope              | wofür                                         |
+|--------------------|-----------------------------------------------|
+| `api`              | glab und MCP-Server: Issues, MRs, Pipelines   |
+| `read_user`        | `glab auth status`, eigene Identität          |
+| `write_repository` | `git push` über HTTPS                         |
+
+Für eine **eigene GitLab-Instanz** genügt es, `GITLAB_HOST` auf deren Hostnamen
+zu setzen (z. B. `GITLAB_HOST=gitlab.example.org`); glab, Credential-Helper und
+MCP-Server richten sich danach. Danach `./sandbox.sh restart`.
+
+`GLAB_VERSION` in der `.env` pinnt die glab-Version (leer = neueste), danach
+`./sandbox.sh rebuild`.
+
+### Hinweis zum MCP-Server
+
+`glab mcp serve` ist bei GitLab als experimentell markiert und gibt seit glab
+1.130 beim Start einen Deprecation-Hinweis aus; GitLab verweist auf seinen
+offiziellen, gehosteten MCP-Server. Der eingebaute Server funktioniert weiterhin.
+Sollte er in einer künftigen glab-Version wegfallen, `GLAB_VERSION` auf eine
+Version pinnen, die ihn noch enthält.
+
+Die mitgelieferten Befehle `/plan-item` und `/implement-item` arbeiten weiterhin
+nur mit GitHub-Issues. glab und der GitLab-MCP-Server stehen den Agenten aber in
+jeder Sitzung zur Verfügung.
+
 ## Die beiden Agenten
 
 | Agent       | Start im Container | Anmeldung                          | Ablage im Container |
@@ -181,10 +228,11 @@ ersten Start hineinkopiert. Nach einer Aenderung:
 
 Oder `SEED_OVERWRITE=1` in der `.env`, dann geschieht das bei jedem Start.
 
-### GitHub-MCP bei beiden
+### MCP-Server bei beiden
 
-opencode bekommt den GitHub-MCP-Server ueber seine Konfiguration mitgeliefert.
-Bei Claude Code wird er einmalig registriert:
+opencode bekommt den GitHub- und den GitLab-MCP-Server ueber seine
+Konfiguration mitgeliefert. Bei Claude Code werden beide einmalig registriert
+(bereits vorhandene Eintraege bleiben unveraendert):
 
 ```bash
 ./sandbox.sh setup-mcp
@@ -279,9 +327,11 @@ noch aktiv - die Werkzeuge sind also da, falls spaeter doch ein Board dazukommt.
 ./sandbox.sh run go test ./...
 ./sandbox.sh clone owner/repo
 ./sandbox.sh gh pr list
+./sandbox.sh glab mr list            # GitLab: Merge Requests
+./sandbox.sh glab repo clone grp/proj   # GitLab-Projekt nach /work holen
 ./sandbox.sh status
 ./sandbox.sh doctor      # Selbsttest: Docker, Image, Werkzeuge im Container
-./sandbox.sh setup-mcp   # GitHub-MCP bei Claude Code eintragen
+./sandbox.sh setup-mcp   # GitHub- und GitLab-MCP bei Claude Code eintragen
 ./sandbox.sh reseed      # Vorlagen aus config/ neu in den Container kopieren
 ./sandbox.sh stop
 ./sandbox.sh update     # opencode und Basis-Image aktualisieren
@@ -305,9 +355,9 @@ Sandbox-Effekt. Alles ausserhalb bleibt unerreichbar.
 
 ## Was im Image steckt
 
-Debian 12 (slim), Go, Node.js 22, Python 3, dazu git, GitHub CLI, ripgrep, fd,
-jq, tmux, build-essential, der GitHub-MCP-Server sowie opencode und
-Claude Code. Rust laesst sich mit `INSTALL_RUST=true`
+Debian 12 (slim), Go, Node.js 22, Python 3, dazu git, GitHub CLI, GitLab CLI
+(glab, inkl. MCP-Server), ripgrep, fd, jq, tmux, build-essential, der
+GitHub-MCP-Server sowie opencode und Claude Code. Rust laesst sich mit `INSTALL_RUST=true`
 zuschalten, einzelne Toolchains mit `INSTALL_NODE=false` usw. abschalten.
 Zusaetzliche Debian-Pakete kommen ueber `EXTRA_APT_PACKAGES` ins Image.
 Nach jeder Aenderung an diesen Schaltern: `./sandbox.sh rebuild`.
@@ -356,3 +406,6 @@ Der auskommentierte SSH-Mount in der `compose.yaml` heisst unter Windows
   laufenden Container, nicht im Image. Es reicht so weit, wie seine Rechte
   reichen - fuer eine engere Grenze ein fine-grained Token auf die betroffenen
   Repositories ausstellen.
+* Fuer das GitLab-Token gilt dasselbe: nur `.env` und Umgebungsvariable. Fuer
+  eine engere Grenze ein Project- oder Group-Access-Token statt eines
+  persoenlichen Tokens verwenden.
