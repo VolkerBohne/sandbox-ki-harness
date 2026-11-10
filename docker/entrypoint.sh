@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Verzeichnisse sicherstellen (Volumes koennen leer gemountet sein)
-mkdir -p "$HOME/.config/opencode" "$HOME/.config/gh" \
+mkdir -p "$HOME/.config/opencode" "$HOME/.config/gh" "$HOME/.config/glab-cli" \
          "$HOME/.local/share/opencode" "$HOME/.local/bin" \
          "$HOME/.npm-global/bin" "$HOME/go/pkg" \
          "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
@@ -42,6 +42,15 @@ if [ -n "${GH_TOKEN:-}" ]; then
   git config --global --add "credential.https://${host}.helper" ""
   git config --global --add "credential.https://${host}.helper" "!gh auth git-credential"
   git config --global credential.https://gist.github.com.helper "!gh auth git-credential"
+fi
+
+# GitLab: Token aus der .env fuer glab und git nutzbar machen.
+# glab liest GITLAB_TOKEN und GITLAB_HOST direkt aus der Umgebung.
+if [ -n "${GITLAB_TOKEN:-}" ]; then
+  host="${GITLAB_HOST:-gitlab.com}"
+  git config --global --unset-all "credential.https://${host}.helper" 2>/dev/null || true
+  git config --global --add "credential.https://${host}.helper" ""
+  git config --global --add "credential.https://${host}.helper" "!glab auth git-credential"
 fi
 
 exec "$@"

@@ -86,6 +86,7 @@ Verwendung: ./sandbox.sh [Befehl]
   run <Befehl>    einen Befehl im Container ausfuehren
   clone <O/R>     Repository nach /work klonen
   gh <Argumente>  GitHub CLI im Container aufrufen
+  glab <Argumente> GitLab CLI im Container aufrufen
   build           Image bauen (nutzt den Cache)
   rebuild         Image komplett neu bauen und Container ersetzen
   update          Basis-Images und opencode aktualisieren
@@ -94,7 +95,7 @@ Verwendung: ./sandbox.sh [Befehl]
   status          Zustand von Image, Container und Volumes
   logs            Containerausgaben anzeigen
   reseed          Vorlagen aus config/ erneut in den Container kopieren
-  setup-mcp       GitHub-MCP-Server bei Claude Code registrieren
+  setup-mcp       GitHub- und GitLab-MCP-Server bei Claude Code registrieren
   doctor          Selbsttest: Docker, Image, Container, Werkzeuge
   down            Container entfernen (Projekte und Anmeldung bleiben)
   destroy         Container UND Volumes entfernen (Anmeldung geht verloren)
@@ -160,6 +161,11 @@ AUTH
       else
         claude mcp add github --scope user -- github-mcp-server stdio
       fi
+      if claude mcp get gitlab >/dev/null 2>&1; then
+        echo "GitLab-MCP-Server ist bei Claude Code bereits eingetragen."
+      else
+        claude mcp add gitlab --scope user -- glab mcp serve
+      fi
     '
     ;;
   run|exec)
@@ -176,6 +182,10 @@ AUTH
   gh)
     ensure_up
     exec docker compose exec "$SERVICE" gh "$@"
+    ;;
+  glab)
+    ensure_up
+    exec docker compose exec "$SERVICE" glab "$@"
     ;;
   build)
     docker compose build "$@"
@@ -200,6 +210,7 @@ AUTH
     echo "Projekte:   ${WORKSPACE_DIR:-./workspace}  ->  /work"
     echo "Anthropic:  $([ -n "${ANTHROPIC_API_KEY:-}" ] && echo 'Key in .env' || echo 'kein Key (Anmeldung im jeweiligen TUI)')"
     echo "GitHub:     $([ -n "${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] && echo "Token gesetzt, Toolsets: ${GITHUB_TOOLSETS:-Standard}" || echo 'kein Token in .env')"
+    echo "GitLab:     $([ -n "${GITLAB_TOKEN:-}" ] && echo "Token gesetzt, Host: ${GITLAB_HOST:-gitlab.com}" || echo 'kein Token in .env')"
     echo "Board:      ${GITHUB_PROJECT_OWNER:-(nicht gesetzt)} / Projekt ${GITHUB_PROJECT_NUMBER:-(nicht gesetzt)}"
     echo
     docker compose ps
@@ -218,6 +229,7 @@ AUTH
         echo "  claude:            $(claude --version 2>/dev/null || echo FEHLT)"
         echo "  github-mcp-server: $(github-mcp-server --version 2>/dev/null || echo vorhanden/ohne-Versionsausgabe)"
         echo "  gh:                $(gh --version 2>/dev/null | head -1 || echo FEHLT)"
+        echo "  glab:              $(glab --version 2>/dev/null | head -1 || echo FEHLT)"
         echo "  go:                $(go version 2>/dev/null || echo nicht-installiert)"
         echo "  node:              $(node --version 2>/dev/null || echo nicht-installiert)"
         echo "  python:            $(python --version 2>/dev/null || echo nicht-installiert)"
@@ -227,6 +239,7 @@ AUTH
         echo "    -> claude:       $(ls -1 $HOME/.claude/commands/*.md 2>/dev/null | wc -l | tr -d " ")"
         echo "  Skills:            $(ls -1d $HOME/.claude/skills/*/ 2>/dev/null | wc -l | tr -d " ")"
         echo "  GitHub-Token:      $([ -n "${GH_TOKEN:-}" ] && echo gesetzt || echo fehlt)"
+        echo "  GitLab-Token:      $([ -n "${GITLAB_TOKEN:-}" ] && echo "gesetzt (${GITLAB_HOST:-gitlab.com})" || echo fehlt)"
         echo "  Anthropic-Key:     $([ -n "${ANTHROPIC_API_KEY:-}" ] && echo gesetzt || echo fehlt)"
         echo "  Claude-Anmeldung:  $([ -f "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.credentials.json" ] && echo vorhanden || echo fehlt)"
       '

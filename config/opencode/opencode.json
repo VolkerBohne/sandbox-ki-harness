@@ -22,6 +22,16 @@
         "X-MCP-Toolsets": "{env:GITHUB_TOOLSETS}"
       },
       "timeout": 20000
+    },
+    "gitlab": {
+      "type": "local",
+      "enabled": true,
+      "command": ["glab", "mcp", "serve"],
+      "environment": {
+        "GITLAB_TOKEN": "{env:GITLAB_TOKEN}",
+        "GITLAB_HOST": "{env:GITLAB_HOST}"
+      },
+      "timeout": 20000
     }
   }
 }
