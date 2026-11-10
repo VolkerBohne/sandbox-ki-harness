@@ -1,5 +1,8 @@
 # Begruessung + Komfort in der Sandbox
-export PS1='\[\e[32m\]sandbox\[\e[0m\]:\[\e[34m\]\w\[\e[0m\]\$ '
+# Prompt nur fuer bash - in zsh setzt Spaceship den Prompt
+if [ -n "${BASH_VERSION:-}" ]; then
+  export PS1='\[\e[32m\]sandbox\[\e[0m\]:\[\e[34m\]\w\[\e[0m\]\$ '
+fi
 alias ll='ls -alF --color=auto'
 alias ls='ls --color=auto'
 

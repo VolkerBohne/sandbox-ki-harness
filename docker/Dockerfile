@@ -29,6 +29,9 @@ ARG OPENCODE_VERSION=
 ARG INSTALL_CLAUDE=true
 ARG CLAUDE_CODE_VERSION=
 ARG GLAB_VERSION=
+ARG INSTALL_ZSH=true
+ARG OMZ_REF=master
+ARG SPACESHIP_REF=master
 ARG EXTRA_APT_PACKAGES=
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -51,6 +54,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 ENV TZ=${TZ}
+
+# ---------------------------------------------------------------- zsh (optional)
+RUN set -eux; \
+    if [ "${INSTALL_ZSH}" = "true" ]; then \
+      apt-get update; \
+      apt-get install -y --no-install-recommends zsh; \
+      rm -rf /var/lib/apt/lists/*; \
+      zsh --version; \
+    fi
 
 # ---------------------------------------------------------------- GitHub CLI
 RUN set -eux; \
@@ -162,12 +174,15 @@ RUN chmod 0755 /usr/local/bin/github-mcp-server
 
 # ---------------------------------------------------------------- Benutzer
 RUN set -eux; \
+    login_shell=/bin/bash; \
+    if [ "${INSTALL_ZSH}" = "true" ]; then login_shell=/bin/zsh; fi; \
     if ! getent group "${USER_GID}" >/dev/null; then groupadd -g "${USER_GID}" dev; fi; \
     if ! getent passwd "${USER_UID}" >/dev/null; then \
-      useradd -m -u "${USER_UID}" -g "${USER_GID}" -s /bin/bash dev; \
+      useradd -m -u "${USER_UID}" -g "${USER_GID}" -s "${login_shell}" dev; \
     else \
       existing="$(getent passwd "${USER_UID}" | cut -d: -f1)"; \
       [ "${existing}" = "dev" ] || usermod -l dev -d /home/dev -m "${existing}"; \
+      usermod -s "${login_shell}" dev; \
     fi; \
     if [ "${ENABLE_SUDO}" = "true" ]; then \
       echo 'dev ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/90-dev; \
@@ -199,12 +214,33 @@ ENV HOME=/home/dev \
 # Ergebnis nur fuer root lesbar und der Container startet nicht.
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY bashrc.d/sandbox.sh /etc/profile.d/zz-sandbox.sh
+COPY zsh/ /opt/sandbox-zsh/
 RUN chmod 0755 /usr/local/bin/entrypoint.sh \
  && chmod 0644 /etc/profile.d/zz-sandbox.sh \
- && chown root:root /usr/local/bin/entrypoint.sh /etc/profile.d/zz-sandbox.sh
+ && chmod -R u=rwX,go=rX /opt/sandbox-zsh \
+ && chown root:root /usr/local/bin/entrypoint.sh /etc/profile.d/zz-sandbox.sh \
+ && chown -R root:root /opt/sandbox-zsh
 
 USER dev
 WORKDIR /work
+
+# ---------------------------------------------------------------- oh-my-zsh + Spaceship
+# Liegt direkt in /home/dev (kein Volume) und kommt so mit jedem Rebuild
+# frisch. Auto-Updates sind in der .zshrc abgeschaltet.
+RUN set -eux; \
+    if [ "${INSTALL_ZSH}" = "true" ]; then \
+      ZSH="$HOME/.oh-my-zsh"; \
+      git clone --depth=1 --branch "${OMZ_REF}" https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"; \
+      git clone --depth=1 https://github.com/zsh-users/zsh-completions.git \
+        "$ZSH/custom/plugins/zsh-completions"; \
+      git clone --depth=1 --branch "${SPACESHIP_REF}" https://github.com/spaceship-prompt/spaceship-prompt.git \
+        "$ZSH/custom/themes/spaceship-prompt"; \
+      ln -s spaceship-prompt/spaceship.zsh-theme "$ZSH/custom/themes/spaceship.zsh-theme"; \
+      mkdir -p "$ZSH/custom/plugins/glab"; \
+      install -m 0644 /opt/sandbox-zsh/glab.plugin.zsh "$ZSH/custom/plugins/glab/glab.plugin.zsh"; \
+      install -m 0644 /opt/sandbox-zsh/zshrc "$HOME/.zshrc"; \
+      SANDBOX_MOTD_SHOWN=1 zsh -i -c 'test "$ZSH_THEME" = spaceship'; \
+    fi
 
 # Ueber bash aufgerufen: so genuegt Leserecht, das Ausfuehrungsbit allein
 # waere eine weitere Stolperstelle.
