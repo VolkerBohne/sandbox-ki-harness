@@ -1,14 +1,15 @@
 # R1.1 Befehl `spec-init`
 
 Geplant am 2026-11-11. Branch für die Umsetzung: `step/2026-11-11-befehl-spec-init`.
-Anforderungen: SDD-1, SDD-3, SDD-7 (Querschnitt: X-1).
+Anforderungen: SDD-1, SDD-3, SDD-7, SDD-9 (Querschnitt: X-1).
 
 ## Ziel
 
 Es gibt einen geteilten Befehl `/spec-init`, der in einem beliebigen Projekt
 die Spec-Dateien `specs/mission.md`, `specs/requirements.md` und
-`specs/roadmap.md` anlegt. Vorher stellt er je Datei genau eine Runde
-gruppierter Rückfragen. Der Befehl funktioniert gleich in opencode und Claude
+`specs/roadmap.md` anlegt, soweit sie noch fehlen. Vorher stellt er je
+anzulegender Datei genau eine Runde gruppierter Rückfragen. Die Dateien
+entstehen in der Sprache des Zielprojekts. Der Befehl funktioniert gleich in opencode und Claude
 Code und setzt keine bestimmte Sprache und kein bestimmtes Werkzeug voraus.
 
 ## Betroffene Dateien
@@ -18,7 +19,7 @@ Code und setzt keine bestimmte Sprache und kein bestimmtes Werkzeug voraus.
 | `config/commands/spec-init.md` | neu | Die eigentliche Anleitung, gemeinsame Quelle für beide Agenten (SDD-1, X-1). |
 | `config/skills/spec-init/SKILL.md` | neu | Skill-Hülle nach dem Muster von `config/skills/plan-item/SKILL.md`, verweist auf `/opt/agent-commands/spec-init.md` (SDD-1). |
 | `README.md` | Tabelle unter *Geteilte Befehle* erweitern | Nur ein Hinweis, dass `/spec-init` existiert. Der ausführliche Abschnitt folgt in R1.4. |
-| `specs/roadmap.md` | R1.1 abhaken | SDD-5, im selben PR. |
+| `specs/roadmap.md` | R1.1 abhaken | SDD-5, im selben PR. Die Anpassungen an *Anf.* und *Später / ungeplant* sind schon bei der Planung erfolgt. |
 
 Nicht betroffen: `compose.yaml`, `Dockerfile`, `sandbox.sh`, `sandbox.ps1`.
 Die Verzeichnisse `config/commands` und `config/skills` sind schon eingehängt,
@@ -29,16 +30,22 @@ die neuen Dateien sind nach einem Neustart der CLI sichtbar.
 1. **Befehlsdatei anlegen** `config/commands/spec-init.md`:
    - Frontmatter nur mit `description` (README, *Was beim Schreiben eigener
      Befehle zu beachten ist*).
+   - Umlaute in der Befehlsdatei und der Skill-Hülle als `ae`/`oe`/`ue`/`ss`,
+     wie in den vorhandenen Befehlen.
    - `$ARGUMENTS` optional als Kurzbeschreibung des Projekts.
    - **Schritt 0: Kontext** per Kommandoblock: Verzeichnis, Git-Repository,
      Branch, vorhandene Dateien unter `specs/`.
-   - **Vorhandene Specs:** Liegt schon eine der drei Dateien vor, nennt der
-     Befehl sie und bricht ab, ohne etwas zu überschreiben (siehe *Offene
-     Punkte*).
+   - **Vorhandene Specs:** Vorhandene Dateien bleiben unverändert. Der Befehl
+     nennt sie, liest sie als Kontext und legt nur die fehlenden an. Fragerunden
+     gibt es nur für die fehlenden Dateien. Liegen alle drei vor, meldet er das
+     und endet ohne Änderung.
    - **Projekt erkunden** vor den Fragen: README, Build-Dateien (`Makefile`,
      `package.json`, `go.mod`, `pyproject.toml`, `Cargo.toml` o. Ä.) lesen,
      damit nur gefragt wird, was sich nicht nachlesen lässt (SDD-7).
-   - **Drei Fragerunden, je Datei genau eine** (SDD-3), jeweils gesammelt in
+   - **Sprache der Specs** (SDD-9) aus README und vorhandener Dokumentation
+     ablesen. Ist sie nicht eindeutig, wird das in der ersten Fragerunde
+     mitgefragt, nicht in einer eigenen Runde.
+   - **Je fehlender Datei genau eine Fragerunde** (SDD-3), jeweils gesammelt in
      einer Nachricht mit nummerierten Fragen, danach auf Antwort warten:
      1. *mission.md:* Zweck, Zielgruppe, Leitprinzipien mit Rangfolge,
         Nicht-Ziele.
@@ -58,7 +65,8 @@ die neuen Dateien sind nach einem Neustart der CLI sichtbar.
    - **Abschluss:** Liste der angelegten Dateien und Hinweis auf
      `/spec-plan` als nächsten Befehl.
    - **Regeln:** keine Änderungen außerhalb von `specs/`, keine Commits, keine
-     Branches, Antwortsprache Deutsch.
+     Branches. Rückfragen und Zusammenfassung auf Deutsch, die Spec-Dateien
+     in der Sprache des Zielprojekts.
 2. **Skill-Hülle anlegen** `config/skills/spec-init/SKILL.md`: Frontmatter mit
    `name` und `description`, die erklärt, wann der Skill passt (*neues Projekt
    spec-driven aufsetzen, Specs anlegen*). Der Text verweist auf
@@ -86,10 +94,16 @@ Prüfschritte aus `specs/validation.md`:
 
 Schrittspezifisch (aus *Fertig, wenn*):
 
-- In jedem Durchlauf gibt es **genau drei** Fragerunden, eine je Datei. Mehr
-  Rückfragen gelten als fehlgeschlagen.
-- Ein zweiter Aufruf in einem Projekt, in dem `specs/` schon gefüllt ist,
-  überschreibt nichts und nennt die vorhandenen Dateien.
+- In jedem Durchlauf ohne Specs gibt es **genau drei** Fragerunden, eine je
+  Datei. Mehr Rückfragen gelten als fehlgeschlagen.
+- Teilweise vorhandene Specs: In einem Testprojekt mit nur `specs/mission.md`
+  legt der Befehl die beiden anderen Dateien mit genau zwei Fragerunden an.
+  `git diff specs/mission.md` ist danach leer.
+- Ein Aufruf, wenn alle drei Dateien vorliegen, ändert nichts und meldet das.
+- Sprache: In `/work/_test-r1.1-node` mit englischem README entstehen die Specs
+  auf Englisch, in `/work/_test-r1.1-go` mit deutschem README auf Deutsch.
+- `grep -nP '[äöüÄÖÜß]' config/commands/spec-init.md config/skills/spec-init/SKILL.md`
+  findet nichts.
 - Die erzeugte `roadmap.md` enthält mindestens einen Schritt im Format
   `- [ ] **R1.1 …**` mit *Anf.*, *Fertig, wenn* und *Prüfen*, sodass
   `/spec-plan` (R1.2) daran ansetzen kann.
@@ -97,30 +111,31 @@ Schrittspezifisch (aus *Fertig, wenn*):
 Die Testprojekte werden danach gelöscht. Das Ergebnis kommt als
 `## Prüfprotokoll` in den PR (validation.md, Abschnitt 10).
 
+## Entscheidungen
+
+Bei der Planung geklärt:
+
+1. **Vorhandene Specs:** Nur fehlende Dateien werden angelegt, vorhandene
+   bleiben unverändert.
+2. **`validation.md` im Zielprojekt:** nicht in R1.1. Steht in `roadmap.md`
+   unter *Später / ungeplant*.
+3. **Umlaute:** Befehlsdateien und Skill-Hüllen bleiben bei `ae`/`oe`/`ue`.
+4. **Sprache der erzeugten Specs:** die des Zielprojekts, festgehalten als
+   SDD-9 in `requirements.md`.
+
 ## Offene Punkte
 
-1. **Vorhandene Specs:** Geplant ist Abbruch ohne Überschreiben. Alternative
-   wäre, nur fehlende Dateien anzulegen. Das ist im Review zu entscheiden.
-2. **`validation.md` im Zielprojekt:** SDD-8 macht die Datei optional.
-   Soll `spec-init` eine vierte Fragerunde für `validation.md` anbieten? Das
-   würde SDD-3 (*eine Runde je Datei*, drei Dateien) erweitern und bräuchte
-   zuerst eine Anpassung von SDD-3. Vorschlag: in R1.1 nicht, als Idee unter
-   *Später / ungeplant* aufnehmen.
-3. **Umlaute:** Die vorhandenen Befehlsdateien schreiben `ae`/`oe`/`ue`, die
-   Specs echte Umlaute. Beide Agenten verarbeiten UTF-8. Vorschlag: neue
-   Befehle mit Umlauten schreiben, die alten bleiben unverändert.
-4. **Sprache der erzeugten Specs:** Der Befehl antwortet auf Deutsch. Ob die
-   erzeugten Dateien in der Sprache des Zielprojekts geschrieben werden
-   sollen, regeln die Anforderungen bisher nicht.
+Keine.
 
 ## Definition of Done
 
 - `config/commands/spec-init.md` und `config/skills/spec-init/SKILL.md` liegen
   vor und folgen dem Muster von `plan-item`.
 - In beiden Agenten legt `/spec-init` in einem leeren Testprojekt die drei
-  Spec-Dateien an, mit genau einer Fragerunde je Datei.
+  Spec-Dateien an, mit genau einer Fragerunde je Datei und in der Sprache des
+  Projekts. Vorhandene Spec-Dateien bleiben unverändert.
 - `doctor` zählt einen Befehl und einen Skill mehr.
 - Alle Prüfungen aus *Tests* sind im Prüfprotokoll des PR als *bestanden*
   oder begründet als *nicht ausgeführt* eingetragen.
 - R1.1 ist in `specs/roadmap.md` abgehakt, der PR nennt R1.1 und die
-  Anforderungen SDD-1, SDD-3 und SDD-7.
+  Anforderungen SDD-1, SDD-3, SDD-7 und SDD-9.

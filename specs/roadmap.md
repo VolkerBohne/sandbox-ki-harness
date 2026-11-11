@@ -37,7 +37,7 @@ Workflow laufen.
 - [ ] **R1.1 Befehl `spec-init`**
   `config/commands/spec-init.md` mit Skill-Hülle. Der Befehl stellt
   gruppierte Rückfragen und legt die drei Spec-Dateien an.
-  *Anf.:* SDD-1, SDD-3, SDD-7
+  *Anf.:* SDD-1, SDD-3, SDD-7, SDD-9
   *Fertig, wenn:* In einem leeren Testprojekt unter `/work` erzeugt der Befehl
   in beiden Agenten die drei Dateien, mit genau einer Fragerunde je Datei.
   *Prüfen:* `doctor` zählt eine Datei mehr unter „Befehle“. Der Befehl wird je
@@ -263,6 +263,8 @@ Ideen, die noch nicht eingeplant sind. Sie werden erst nach einer Anpassung
 von `requirements.md` aufgenommen.
 
 - GitLab-Issues und Merge Requests für `plan-item` und `implement-item`
+- `spec-init` legt auf Wunsch auch `specs/validation.md` an (erfordert vorher
+  eine Anpassung von SDD-3)
 - Project-Board-Anbindung (`GITHUB_PROJECT_*`)
 - CI mit GitHub Actions (Image-Build, shellcheck, hadolint, `doctor` als
   Smoke-Test)

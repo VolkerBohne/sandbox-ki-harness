@@ -33,6 +33,7 @@ Weg, der von Spec-Dateien im Repository ausgeht.
 | SDD-6 | Die Befehle prüfen, dass Plan und Umsetzung die referenzierten Anforderungs-IDs erfüllen, und nennen Abweichungen ausdrücklich. | SOLL |
 | SDD-7 | Die Befehle sind sprachneutral gegenüber dem Zielprojekt. Sie lesen Build- und Testbefehle aus dem Projekt und setzen keine bestimmten Werkzeuge voraus. | MUSS |
 | SDD-8 | Liegt im Zielprojekt `specs/validation.md`, übernimmt der Befehl zum Planen die passenden Prüfschritte per ID in den Abschnitt *Tests* des Schrittplans. Der Befehl zum Umsetzen führt sie aus und schreibt ein Prüfprotokoll in den PR. Fehlt die Datei, arbeiten die Befehle ohne sie weiter. | SOLL |
+| SDD-9 | Spec-Dateien, die die Befehle erzeugen, sind in der Sprache des Zielprojekts geschrieben. Die Sprache wird aus README und vorhandener Dokumentation abgelesen. Ist sie nicht eindeutig, fragt der Befehl nach. | SOLL |
 
 ## 2. Container-Härtung
 
