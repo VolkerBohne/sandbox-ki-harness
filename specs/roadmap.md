@@ -9,7 +9,9 @@ Jeder Schritt nennt:
 - **Anf.:** die Anforderungs-IDs aus `requirements.md`, die er erfüllt
   (ganz oder teilweise)
 - **Fertig, wenn:** die Akzeptanzkriterien
-- **Prüfen:** wie man es nachvollzieht
+- **Prüfen:** wie man es nachvollzieht. Die allgemeinen Prüfschritte
+  (`V-…`) und welche davon je Art der Änderung Pflicht sind, stehen in
+  `validation.md`.
 
 Ab Phase 2 gilt DOC-6: Jede Sicherheitsänderung bringt im selben Schritt ihre
 `doctor`-Prüfung mit.
@@ -21,6 +23,11 @@ Ab Phase 2 gilt DOC-6: Jede Sicherheitsänderung bringt im selben Schritt ihre
 - [x] **R0.1 Specs anlegen**
   `specs/mission.md`, `specs/requirements.md` und `specs/roadmap.md` stehen im
   Repository.
+
+- [x] **R0.2 Validierung beschreiben**
+  `specs/validation.md` beschreibt die Prüfschritte mit IDs, die Pflichtprüfungen
+  je Art der Änderung und das Prüfprotokoll im PR.
+  *Anf.:* SDD-6, SDD-8
 
 ## Phase 1: Spec-Driven-Befehle
 
@@ -39,7 +46,7 @@ Workflow laufen.
 - [ ] **R1.2 Befehl `spec-plan`**
   Er liest die Specs, wählt den nächsten offenen Schritt oder eine
   angegebene ID und schreibt `specs/steps/YYYY-MM-DD-<slug>.md`.
-  *Anf.:* SDD-1, SDD-2, SDD-4, SDD-6
+  *Anf.:* SDD-1, SDD-2, SDD-4, SDD-6, SDD-8
   *Fertig, wenn:* `/spec-plan` ohne Argument plant R1.3 dieser Roadmap, ohne
   Code anzufassen. Fehlen die Specs, bricht der Befehl mit einem Hinweis ab.
   *Prüfen:* `git status` zeigt nur die neue Datei unter `specs/steps/`.
@@ -47,7 +54,7 @@ Workflow laufen.
 - [ ] **R1.3 Befehl `spec-implement`**
   Er arbeitet einen Schrittplan ab, mit Branch `step/YYYY-MM-DD-<slug>`,
   Commits mit der ID, einem PR und dem Haken in der Roadmap.
-  *Anf.:* SDD-1, SDD-2, SDD-5, SDD-6, SDD-7
+  *Anf.:* SDD-1, SDD-2, SDD-5, SDD-6, SDD-7, SDD-8
   *Fertig, wenn:* Ein Probelauf an R1.4 (`/spec-plan R1.4`, danach
   `/spec-implement R1.4`) öffnet einen PR, in dem R1.4 abgehakt ist.
   *Prüfen:* Branch-Name, Commit-Message, PR-Text und der Diff von `roadmap.md`
