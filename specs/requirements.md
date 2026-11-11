@@ -32,6 +32,8 @@ Weg, der von Spec-Dateien im Repository ausgeht.
 | SDD-5 | Ein Befehl zum **Umsetzen** arbeitet einen Schrittplan ab: Er legt einen Branch `step/YYYY-MM-DD-<slug>` an, der genauso heißt wie die Datei des Schrittplans (ohne `.md`). Er nennt die Roadmap-ID im Commit und öffnet einen Pull Request. Im selben PR hakt er den Schritt in `roadmap.md` ab. | MUSS |
 | SDD-6 | Die Befehle prüfen, dass Plan und Umsetzung die referenzierten Anforderungs-IDs erfüllen, und nennen Abweichungen ausdrücklich. | SOLL |
 | SDD-7 | Die Befehle sind sprachneutral gegenüber dem Zielprojekt. Sie lesen Build- und Testbefehle aus dem Projekt und setzen keine bestimmten Werkzeuge voraus. | MUSS |
+| SDD-8 | Liegt im Zielprojekt `specs/validation.md`, übernimmt der Befehl zum Planen die passenden Prüfschritte per ID in den Abschnitt *Tests* des Schrittplans. Der Befehl zum Umsetzen führt sie aus und schreibt ein Prüfprotokoll in den PR. Fehlt die Datei, arbeiten die Befehle ohne sie weiter. | SOLL |
+| SDD-9 | Spec-Dateien, die die Befehle erzeugen, sind in der Sprache des Zielprojekts geschrieben. Die Sprache wird aus README und vorhandener Dokumentation abgelesen. Ist sie nicht eindeutig, fragt der Befehl nach. | SOLL |
 
 ## 2. Container-Härtung
 

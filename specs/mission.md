@@ -52,5 +52,7 @@ Das Projekt wird **spec-driven** weiterentwickelt:
    Anforderungen.
 3. `specs/roadmap.md`: in welcher Reihenfolge umgesetzt wird. Jeder Schritt
    entspricht einem kleinen Pull Request und wird nach dem Merge abgehakt.
+4. `specs/validation.md`: wie geprüft wird, mit nummerierten Prüfschritten,
+   auf die Schrittpläne und Pull Requests verweisen.
 
 Ändert sich die Richtung, wird zuerst die Spec angepasst und danach der Code.
