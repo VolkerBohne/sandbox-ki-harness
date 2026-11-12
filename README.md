@@ -271,6 +271,10 @@ werden sie dorthin eingehaengt, wo beide Agenten nachsehen:
 | opencode    | `~/.config/opencode/commands` | `/plan-item 42` |
 | Claude Code | `~/.claude/commands`          | `/plan-item 42` |
 
+Mitgeliefert sind `/plan-item` und `/implement-item` fuer GitHub-Issues sowie
+`/spec-init`, der die Spec-Dateien unter `specs/` fuer Spec-Driven Development
+anlegt.
+
 Eine neue Datei in `config/commands/` steht damit sofort in beiden bereit - kein
 Kopieren, kein Rebuild, nur die jeweilige CLI neu starten. Die Verzeichnisse
 sind nur lesend eingehaengt; geaendert wird auf dem Host.
