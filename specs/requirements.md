@@ -107,3 +107,20 @@ und endet immer mit Exit-Code 0.
 | DOC-4 | Die Prüflogik liegt einmal im Image (`/usr/local/bin/sandbox-doctor`). `sandbox.sh` und `sandbox.ps1` rufen sie nur auf, sodass der Gleichstand der Plattformen ohne doppelten Code entsteht. | MUSS |
 | DOC-5 | `doctor --security` führt nur die Sicherheitsgruppe aus. | KANN |
 | DOC-6 | Jede neue Sicherheitsanforderung bringt im selben PR ihre `doctor`-Prüfung mit. | MUSS |
+
+## 7. OpenSpec (OSP)
+
+Ausgangslage: [OpenSpec](https://github.com/Fission-AI/OpenSpec) ist ein
+eigener Workflow für Spec-Driven Development (`openspec/specs`,
+`openspec/changes`). Ab Version 2.0 liefert er nur Skills, keine Befehle. Sie
+werden je Projekt über `openspec init` angelegt. OpenSpec steht in Zielprojekten
+**zusätzlich** zu den eigenen Befehlen aus Abschnitt 1 bereit.
+
+| ID | Anforderung | Stufe |
+|----|-------------|-------|
+| OSP-1 | Die OpenSpec-CLI (`@fission-ai/openspec`) wird per npm ins Image installiert, gesteuert über `INSTALL_OPENSPEC` (Voreinstellung `true`) und `OPENSPEC_VERSION`. Die Version ist gepinnt (Voreinstellung `2.0.0`) und wird bewusst angehoben. Fehlt Node oder ist es älter als die Mindestversion von OpenSpec, bricht der Build mit einem Hinweis ab. | MUSS |
+| OSP-2 | In jedem Projekt unter `/work` richtet `openspec init --tools claude,opencode` die Skills für beide Agenten ein, und `openspec update` aktualisiert sie. | MUSS |
+| OSP-3 | Alle Skills von OpenSpec (Kern- und optionale Skills) stehen beiden Agenten zusätzlich global zur Verfügung, ohne `openspec init` im Projekt. Sie liegen als Kopie unter `config/skills/openspec-*`, erzeugt mit der gepinnten CLI-Version. `./sandbox.sh update` und `.\sandbox.ps1 update` erzeugen sie nach dem Rebuild neu, und die Version, aus der sie stammen, steht in `config/skills/.openspec-version`. | MUSS |
+| OSP-4 | Telemetrie und Update-Prüfung von OpenSpec sind im Container fest abgeschaltet (`OPENSPEC_TELEMETRY=0`, `DO_NOT_TRACK=1`, `OPENSPEC_NO_UPDATE_CHECK=1`). | MUSS |
+| OSP-5 | OpenSpec ergänzt die Befehle aus Abschnitt 1 und ersetzt sie nicht. Das README grenzt beide Wege gegeneinander ab. | MUSS |
+| OSP-6 | `doctor` zeigt die installierte OpenSpec-Version und die Version, aus der die globalen Skills stammen. | SOLL |

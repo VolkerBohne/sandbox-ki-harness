@@ -43,7 +43,7 @@ Grundregeln:
 
 | ID | Prüfung | Wie | Erwartung | Ort |
 |----|---------|-----|-----------|-----|
-| V-SPEC-1 | Jede in `roadmap.md` und im Schrittplan genannte Anforderungs-ID existiert in `requirements.md`. | `grep -ohE '\b(SDD\|HARD\|SEC\|PERM\|NET\|DOC\|X)-[0-9]+\b' specs/roadmap.md specs/steps/*.md \| sort -u`, die Liste mit den in `requirements.md` definierten IDs abgleichen (`comm -23`) | Keine unbekannte ID | beide |
+| V-SPEC-1 | Jede in `roadmap.md` und im Schrittplan genannte Anforderungs-ID existiert in `requirements.md`. | `grep -ohE '\b(SDD\|HARD\|SEC\|PERM\|NET\|DOC\|OSP\|X)-[0-9]+\b' specs/roadmap.md specs/steps/*.md \| sort -u`, die Liste mit den in `requirements.md` definierten IDs abgleichen (`comm -23`) | Keine unbekannte ID | beide |
 | V-SPEC-2 | Die erste Zeile des Schrittplans nennt die Roadmap-ID. | `head -1 specs/steps/<datei>.md` | Enthält z. B. `R1.1` | beide |
 | V-SPEC-3 | Der Branch heißt wie die Datei des Schrittplans. | `git rev-parse --abbrev-ref HEAD` mit `step/<dateiname ohne .md>` vergleichen | Gleich (SDD-5) | beide |
 | V-SPEC-4 | Der Schritt ist im selben PR in `roadmap.md` abgehakt, und sonst wurde dort nichts geändert. | `git diff main -- specs/roadmap.md` | Genau ein `[ ]` → `[x]` für diesen Schritt | beide |
