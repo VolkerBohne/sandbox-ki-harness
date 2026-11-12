@@ -6,6 +6,10 @@ Schritte bauen aufeinander auf und werden der Reihe nach abgearbeitet.
 
 Jeder Schritt nennt:
 
+Die Nummer eines Schritts ist eine feste ID. Die Reihenfolge der Umsetzung
+ergibt sich aus der Position in dieser Datei, nicht aus der Nummer. Neue
+Schritte bekommen die nächste freie Nummer ihrer Phase.
+
 - **Anf.:** die Anforderungs-IDs aus `requirements.md`, die er erfüllt
   (ganz oder teilweise)
 - **Fertig, wenn:** die Akzeptanzkriterien
@@ -43,6 +47,20 @@ Workflow laufen.
   *Prüfen:* `doctor` zählt eine Datei mehr unter „Befehle“. Der Befehl wird je
   einmal in opencode und in Claude Code durchgespielt.
 
+- [ ] **R1.5 OpenSpec für beide Agenten**
+  Die OpenSpec-CLI kommt in gepinnter Version ins Image, alle ihre Skills
+  liegen zusätzlich global unter `config/skills/openspec-*`, und Telemetrie sowie Update-Prüfung sind
+  abgeschaltet.
+  *Anf.:* OSP-1, OSP-2, OSP-3, OSP-4, OSP-6, X-1, X-2, X-3
+  *Fertig, wenn:* Nach einem Rebuild meldet `openspec --version` die
+  installierte Version. In einem Testprojekt legt
+  `openspec init --tools claude,opencode` `openspec/` und die Skills an. In
+  einem Projekt ohne `init` sind die globalen `openspec-*`-Skills in beiden
+  Agenten sichtbar. `./sandbox.sh update` erzeugt die globalen Skills neu. Die
+  drei Umgebungsvariablen aus OSP-4 sind gesetzt.
+  *Prüfen:* `./sandbox.sh doctor` und `.\sandbox.ps1 doctor`, danach je Agent
+  einmal `openspec-explore` in einem Testprojekt aufrufen.
+
 - [ ] **R1.2 Befehl `spec-plan`**
   Er liest die Specs, wählt den nächsten offenen Schritt oder eine
   angegebene ID und schreibt `specs/steps/YYYY-MM-DD-<slug>.md`.
@@ -62,8 +80,8 @@ Workflow laufen.
 
 - [ ] **R1.4 README-Abschnitt „Spec-Driven arbeiten“**
   Er beschreibt den Ablauf `spec-init` → `spec-plan` → `spec-implement` und
-  grenzt ihn gegen `plan-item` und `implement-item` ab.
-  *Anf.:* X-3
+  grenzt ihn gegen `plan-item` und `implement-item` sowie gegen OpenSpec ab.
+  *Anf.:* X-3, OSP-5
   *Fertig, wenn:* Der Abschnitt steht im README, mit einem Beispiel.
 
 ## Phase 2: Gerüst für `doctor`

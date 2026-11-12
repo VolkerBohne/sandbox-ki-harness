@@ -54,5 +54,7 @@ Das Projekt wird **spec-driven** weiterentwickelt:
    entspricht einem kleinen Pull Request und wird nach dem Merge abgehakt.
 4. `specs/validation.md`: wie geprüft wird, mit nummerierten Prüfschritten,
    auf die Schrittpläne und Pull Requests verweisen.
+5. `specs/tech-stack.md`: womit gebaut wird, eingesetzte und geplante
+   Komponenten.
 
 Ändert sich die Richtung, wird zuerst die Spec angepasst und danach der Code.
