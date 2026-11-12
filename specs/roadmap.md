@@ -34,7 +34,7 @@ Ab Phase 2 gilt DOC-6: Jede Sicherheitsänderung bringt im selben Schritt ihre
 Diese Phase kommt zuerst, damit alle folgenden Schritte schon über den neuen
 Workflow laufen.
 
-- [ ] **R1.1 Befehl `spec-init`**
+- [x] **R1.1 Befehl `spec-init`**
   `config/commands/spec-init.md` mit Skill-Hülle. Der Befehl stellt
   gruppierte Rückfragen und legt die drei Spec-Dateien an.
   *Anf.:* SDD-1, SDD-3, SDD-7, SDD-9
